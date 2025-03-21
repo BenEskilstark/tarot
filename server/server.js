@@ -14,7 +14,7 @@ const doChat = (message, conversation) => {
 
 const doTarotConversation = ({ question, cardName }) => {
   const message = `
-    I'm doing a tarot reading and my question is "${question}" 
+    I'm doing a tarot reading and my question is "${question}"
     and the card I drew is the ${cardName}.
     What is the interpretation of this reading?
   `
@@ -22,7 +22,7 @@ const doTarotConversation = ({ question, cardName }) => {
 }
 
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 8007;
 
 const app = express();
 app.use(express.json());

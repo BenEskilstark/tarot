@@ -7,17 +7,15 @@ const baseHTML = ({ cardName, question, reading }) => {
         >${reading}</div>`;
     return `
         <div style="padding: 5px">
-                <textarea id="questionTextArea" name="question" rows="4" 
-                    style="width:100%"
+                <textarea id="questionTextArea" name="question" rows="4"
+                    style="width:100%;font-size:20px"
                     placeholder="Enter your question... 🔮"
-                    oninput="closest('tarot-interpreter').inputQuestion()"
                 >${question}</textarea>
                 <br><br>
                 <card-picker></card-picker>
                 <div style="display: flex; justify-content: center">
                     <button style="font-size: 20px; width: 50%"
                         onclick="closest('tarot-interpreter').interpret()"
-                        ${cardName == "" ? "disabled" : ""}
                     >Interpret</button>
                 </div>
             ${divination}
@@ -30,7 +28,6 @@ export default class TarotInterpreter extends HTMLElement {
     connectedCallback() {
         dispatch({ question: "", cardName: "", reading: "" });
         this.render();
-        subscribe(this.render.bind(this));
     }
 
     render() {
@@ -38,16 +35,24 @@ export default class TarotInterpreter extends HTMLElement {
     }
 
     inputQuestion() {
-        const textarea = this.querySelector('#questionTextarea');
-        const question = textarea.value;
         dispatch({ question });
     }
 
     interpret() {
-        const { cardName, question } = getState();
+        const { cardName } = getState();
+        const textarea = this.querySelector('#questionTextarea');
+        const question = textarea.value;
+
+        let loadingEmojis = ["🌑"," 🌒", " 🌓", "🌔", "🌕", "🌖", "🌗", "🌘"];
+        let loadingIndex = 0;
+        let loadInterval = setInterval(() => {
+          dispatch({reading: loadingEmojis[loadingIndex]});
+          loadingIndex = (loadingIndex + 1) % loadingEmojis.length;
+          this.render();
+        }, 200);
 
         // Send the POST request with fetch API or your preferred method
-        fetch("/reading", {
+        fetch("/tarot/reading", {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ question, cardName })
@@ -56,6 +61,7 @@ export default class TarotInterpreter extends HTMLElement {
             return res.json();
         }).then(({ reading }) => {
             dispatch({ reading, question });
+            clearInterval(loadInterval);
             this.render(); // Re-render to show the reading result
         }).catch(error => {
             console.error('There has been a problem with your fetch operation:', error);
